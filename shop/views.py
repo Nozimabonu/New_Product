@@ -37,12 +37,33 @@ def product_list(request, category_slug=None):
     return render(request, 'shop/home.html', context)
 
 
-def product_detail(request, slug):
-    product = Product.objects.get(slug=slug)
+# def product_detail(request, product_slug):
+#     product = get_object_or_404(Product, slug=product_slug)
+#     products = Product.objects.all(category=product.category).exclude(product)
+#     price_lower_bound = product.price * 0.8
+#     price_upper_bound = product.price * 1.2
+#     similar_products = Product.objects.all().filter(Q(price__lte=price_upper_bound) &
+#                                                     Q(price__gte=price_lower_bound)).exclude(slug=product_slug)
+#
+#     comments = product.comments.filter(is_active=True).order_by('-created_at')
+#
+#     count = product.comments.count()
+#     context = {
+#         'product': product,
+#         'comments': comments,
+#         'count': count,
+#         'similar_products': similar_products,
+#         'products': products,
+#     }
+#     return render(request, 'shop/detail.html', context)
+
+
+def product_detail(request, product_slug):
+    product = get_object_or_404(Product, slug=product_slug)
     price_lower_bound = product.price * 0.8
     price_upper_bound = product.price * 1.2
     similar_products = Product.objects.all().filter(Q(price__lte=price_upper_bound) &
-                                                    Q(price__gte=price_lower_bound)).exclude(slug=slug)
+                                                    Q(price__gte=price_lower_bound)).exclude(slug=product_slug)
 
     comments = product.comments.filter(is_active=True).order_by('-created_at')
 
@@ -72,16 +93,19 @@ def product_add(request):
         return render(request, 'shop/product.html', context)
 
 
-def comment_add(request, pk):
-    product = get_object_or_404(Product, id=pk)
-    form = CommentModelForm()
+def comment_add(request, product_slug):
+    product = get_object_or_404(Product, slug=product_slug)
+
     if request.method == 'POST':
         form = CommentModelForm(request.POST)
         if form.is_valid():
             comment = form.save(commit=False)
             comment.product = product
             comment.save()
-            return redirect('product_detail', product.id)
+            print('Save Done ! ')
+            return redirect('comment_add', product_slug)
+    else:
+        form = CommentModelForm(request.GET)
 
     context = {
         'product': product,
@@ -90,17 +114,37 @@ def comment_add(request, pk):
     return render(request, 'shop/detail.html', context)
 
 
-def order_add(request, pk):
-    # products = Product.objects.all() # [1,2,3,4,5]
-    product = Product.objects.filter(id=pk).first()  # [1]
-    form = OrderModelForm()
+# def comment_add(request, product_slug):
+#     product = get_object_or_404(Product, slug=product_slug)
+#     form = CommentModelForm()
+#     if request.method == 'POST':
+#         form = CommentModelForm(request.POST)
+#         if form.is_valid():
+#             comment = form.save(commit=False)
+#             comment.product = product
+#             comment.save()
+#             return redirect('detail', product_slug)
+#
+#     context = {
+#         'form': form,
+#         'product': product
+#     }
+#
+#     return render(request, 'shop/detail.html', context)
+
+
+def order_add(request, product_slug):
+    product = get_object_or_404(Product, slug=product_slug)  # [1]
+
     if request.method == 'POST':
         form = OrderModelForm(request.POST)
         if form.is_valid():
             order = form.save(commit=False)
             order.product = product
             order.save()
-            return redirect('product_detail', product.id)
+            return redirect('order_add', product_slug)
+    else:
+        form = OrderModelForm(request.GET)
 
     context = {
         'product': product,

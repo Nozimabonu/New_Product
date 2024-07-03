@@ -3,6 +3,13 @@ from django.utils.text import slugify
 
 
 # Create your models here.
+class BaseModel(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        abstract = True
+
 
 class Category(models.Model):
     title = models.CharField(max_length=50, unique=True)
@@ -74,7 +81,7 @@ class Order(models.Model):
         return self.email
 
 
-class Comment(models.Model):
+class Comment(BaseModel):
     full_name = models.CharField(max_length=100, null=True, blank=True)
     email = models.EmailField()
     body = models.TextField()

@@ -29,7 +29,6 @@ class CommentModelForm(forms.ModelForm):
 
 
 class OrderModelForm(forms.ModelForm):
-    email = EmailField()
 
     class Meta:
         model = Order
